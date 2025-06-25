@@ -1,21 +1,19 @@
 {
   "name": "twitter-clone",
   "version": "1.0.0",
-  "description": "A Twitter clone with Express.js backend and React frontend",
+  "description": "A full-stack Twitter clone with CRUD operations",
   "main": "server/index.js",
   "scripts": {
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "cd server && npm run dev",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && node index.js",
     "client": "cd client && npm start",
-    "build": "cd client && npm run build",
-    "install-server": "cd server && npm install",
-    "install-client": "cd client && npm install",
-    "install-all": "npm run install-server && npm run install-client"
+    "dev": "concurrently \"npm run server\" \"npm run client\""
   },
-  "keywords": ["twitter", "clone", "react", "express", "node"],
+  "keywords": ["twitter", "clone", "react", "express", "crud", "nodejs"],
   "author": "Your Name",
   "license": "MIT",
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^7.6.0"
   }
 }
