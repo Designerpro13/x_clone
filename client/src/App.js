@@ -1,66 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import './styles.css';
-import LeftSidebar from './components/LeftSidebar';
-import MainFeed from './components/MainFeed';
-import RightSidebar from './components/RightSidebar';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Home from './components/Home';
 import UserProfile from './components/UserProfile';
+import CreateTweet from './components/CreateTweet';
+import EditTweet from './components/EditTweet';
+import UserManagement from './components/UserManagement';
+import './styles.css';
 
 function App() {
-  const [currentView, setCurrentView] = useState('home');
-  const [currentUser, setCurrentUser] = useState(null);
-
-  useEffect(() => {
-    // Set default user (Priya Sharma) as logged in user
-    setCurrentUser({
-      id: '1',
-      name: 'Priya Sharma',
-      username: 'priya_sharma',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-      bio: 'Software Engineer | Love coding and chai ☕',
-      following: 234,
-      followers: 1876
-    });
-  }, []);
-
-  const handleNavigation = (view) => {
-    setCurrentView(view.toLowerCase());
-  };
-
-  const renderMainContent = () => {
-    switch (currentView) {
-      case 'profile':
-        return <UserProfile user={currentUser} />;
-      case 'home':
-      default:
-        return <MainFeed currentUser={currentUser} />;
-    }
-  };
-
-  if (!currentUser) {
-    return (
-      <div className="app">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading...</p>
-        </div>
-      </div>
-    );
-  }
   return (
-    <div className="app">
-      <div className="main-container">
-        <LeftSidebar 
-          currentUser={currentUser} 
-          onNavigate={handleNavigation}
-        />
-        
-        <div className="content-wrapper">
-          {renderMainContent()}
+    <Router>
+      <div className="App">
+        <Navbar />
+        <div className="main-content">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/create-tweet" element={<CreateTweet />} />
+            <Route path="/edit-tweet/:id" element={<EditTweet />} />
+            <Route path="/profile/:userId" element={<UserProfile />} />
+            <Route path="/users" element={<UserManagement />} />
+          </Routes>
         </div>
-        
-        <RightSidebar />
       </div>
-    </div>
+    </Router>
   );
 }
 

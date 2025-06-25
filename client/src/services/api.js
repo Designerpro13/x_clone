@@ -1,8 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-production-api.com/api' 
-  : 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -11,34 +9,46 @@ const api = axios.create({
   },
 });
 
-// Request interceptor
-api.interceptors.request.use(
-  (config) => {
-    // Add auth token if available
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+// Tweet CRUD Operations
+export const tweetService = {
+  // READ - Get all tweets
+  getAllTweets: () => api.get('/tweets'),
+  
+  // READ - Get single tweet
+  getTweetById: (id) => api.get(`/tweets/${id}`),
+  
+  // CREATE - Create new tweet
+  createTweet: (tweetData) => api.post('/tweets', tweetData),
+  
+  // UPDATE - Update tweet
+  updateTweet: (id, tweetData) => api.put(`/tweets/${id}`, tweetData),
+  
+  // DELETE - Delete tweet
+  deleteTweet: (id) => api.delete(`/tweets/${id}`),
+  
+  // Like tweet
+  likeTweet: (id) => api.post(`/tweets/${id}/like`),
+  
+  // Retweet
+  retweetTweet: (id) => api.post(`/tweets/${id}/retweet`),
+};
 
-// Response interceptor
-api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized access
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
+// User CRUD Operations
+export const userService = {
+  // READ - Get all users
+  getAllUsers: () => api.get('/users'),
+  
+  // READ - Get single user
+  getUserById: (id) => api.get(`/users/${id}`),
+  
+  // CREATE - Create new user
+  createUser: (userData) => api.post('/users', userData),
+  
+  // UPDATE - Update user
+  updateUser: (id, userData) => api.put(`/users/${id}`, userData),
+  
+  // DELETE - Delete user
+  deleteUser: (id) => api.delete(`/users/${id}`),
+};
 
-export default api;
+export default { tweetService, userService };

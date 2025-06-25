@@ -167,6 +167,65 @@ app.post('/api/tweets', (req, res) => {
   res.status(201).json(tweetWithUser);
 });
 
+// Get a single tweet by ID
+app.get('/api/tweets/:id', (req, res) => {
+  const tweetId = req.params.id;
+  const tweet = tweets.find(t => t.id === tweetId);
+  
+  if (!tweet) {
+    return res.status(404).json({ error: 'Tweet not found' });
+  }
+  
+  const tweetWithUser = {
+    ...tweet,
+    user: getUserById(tweet.userId)
+  };
+  
+  res.json(tweetWithUser);
+});
+
+// Update a tweet (PUT)
+app.put('/api/tweets/:id', (req, res) => {
+  const tweetId = req.params.id;
+  const { content, image } = req.body;
+  const tweetIndex = tweets.findIndex(t => t.id === tweetId);
+  
+  if (tweetIndex === -1) {
+    return res.status(404).json({ error: 'Tweet not found' });
+  }
+  
+  if (!content) {
+    return res.status(400).json({ error: 'Content is required' });
+  }
+  
+  tweets[tweetIndex] = {
+    ...tweets[tweetIndex],
+    content,
+    image: image || tweets[tweetIndex].image,
+    updatedAt: new Date()
+  };
+  
+  const tweetWithUser = {
+    ...tweets[tweetIndex],
+    user: getUserById(tweets[tweetIndex].userId)
+  };
+  
+  res.json(tweetWithUser);
+});
+
+// Delete a tweet
+app.delete('/api/tweets/:id', (req, res) => {
+  const tweetId = req.params.id;
+  const tweetIndex = tweets.findIndex(t => t.id === tweetId);
+  
+  if (tweetIndex === -1) {
+    return res.status(404).json({ error: 'Tweet not found' });
+  }
+  
+  const deletedTweet = tweets.splice(tweetIndex, 1)[0];
+  res.json({ message: 'Tweet deleted successfully', tweet: deletedTweet });
+});
+
 // Like/unlike a tweet
 app.post('/api/tweets/:id/like', (req, res) => {
   const tweetId = req.params.id;
@@ -218,6 +277,81 @@ app.get('/api/users/:id', (req, res) => {
     return res.status(404).json({ error: 'User not found' });
   }
   res.json(user);
+});
+
+// Create a new user
+app.post('/api/users', (req, res) => {
+  const { name, username, bio, avatar } = req.body;
+  
+  if (!name || !username) {
+    return res.status(400).json({ error: 'Name and username are required' });
+  }
+  
+  // Check if username already exists
+  const existingUser = users.find(user => user.username === username);
+  if (existingUser) {
+    return res.status(400).json({ error: 'Username already exists' });
+  }
+  
+  const newUser = {
+    id: uuidv4(),
+    name,
+    username,
+    bio: bio || '',
+    avatar: avatar || `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&random=${Date.now()}`,
+    following: 0,
+    followers: 0
+  };
+  
+  users.push(newUser);
+  res.status(201).json(newUser);
+});
+
+// Update a user
+app.put('/api/users/:id', (req, res) => {
+  const userId = req.params.id;
+  const { name, username, bio, avatar } = req.body;
+  const userIndex = users.findIndex(u => u.id === userId);
+  
+  if (userIndex === -1) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  
+  if (!name || !username) {
+    return res.status(400).json({ error: 'Name and username are required' });
+  }
+  
+  // Check if username already exists (excluding current user)
+  const existingUser = users.find(user => user.username === username && user.id !== userId);
+  if (existingUser) {
+    return res.status(400).json({ error: 'Username already exists' });
+  }
+  
+  users[userIndex] = {
+    ...users[userIndex],
+    name,
+    username,
+    bio: bio || users[userIndex].bio,
+    avatar: avatar || users[userIndex].avatar
+  };
+  
+  res.json(users[userIndex]);
+});
+
+// Delete a user
+app.delete('/api/users/:id', (req, res) => {
+  const userId = req.params.id;
+  const userIndex = users.findIndex(u => u.id === userId);
+  
+  if (userIndex === -1) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  
+  // Also delete all tweets by this user
+  tweets = tweets.filter(tweet => tweet.userId !== userId);
+  
+  const deletedUser = users.splice(userIndex, 1)[0];
+  res.json({ message: 'User deleted successfully', user: deletedUser });
 });
 
 app.listen(PORT, () => {
